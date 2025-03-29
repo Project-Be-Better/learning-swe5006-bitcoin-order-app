@@ -10,30 +10,31 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x] # Updated to a supported LTS version
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3 # Updated to v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm" # This replaces the manual cache check
 
       - name: Install Dependencies
-        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
-        run: |
-          npm ci --force
+        run: npm ci # Removed --force flag
 
       - name: Installing JSHint
-        run: |
-          sudo npm install -g jshint
+        run: npm install -g jshint # Removed sudo as it's not needed with GitHub Actions
 
       - name: Change script permission
-        run: |
-          chmod +x scripts/jshint-script.sh
+        run: chmod +x scripts/jshint-script.sh
 
       - name: Run scan with JSHint
         run: scripts/jshint-script.sh
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2 # Downgraded to v2 to avoid the download issue
         with:
-          name: linting tool report
-          path: |
-            ./JSHint-report
+          name: linting-tool-report
+          path: ./JSHint-report
